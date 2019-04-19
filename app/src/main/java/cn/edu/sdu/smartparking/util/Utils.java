@@ -6,6 +6,9 @@ import android.text.Spanned;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -24,6 +27,35 @@ public class Utils {
     public static final String INTENT_NAME_AVOID_HIGHSPEED = "AVOID_HIGHSPEED";
     public static final String INTENT_NAME_PRIORITY_HIGHSPEED = "PRIORITY_HIGHSPEED";
 
+
+    public static void makePost(final Integer pos, final Integer opt) {
+        final String path = "http://47.100.202.14:8088/transact?";
+        new Thread() {
+            public void run() {
+                try {
+                    URL url = new URL(path);
+                    HttpURLConnection conn = (HttpURLConnection) url
+                            .openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setReadTimeout(5000);
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    String data = "pos=" + pos.toString() + "&opt=" + opt.toString();
+                    conn.setRequestProperty("Content-Length",String.valueOf(data.length()));
+                    conn.setDoOutput(true);
+                    conn.getOutputStream().write(data.getBytes());
+                    int code = conn.getResponseCode();
+                    if (code == 200) {
+                        InputStream is = conn.getInputStream();
+                        String result = StreamTool.read(is).toString();
+                    }
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
+    }
 
     public static String getFriendlyTime(int s) {
         String timeDes = "";

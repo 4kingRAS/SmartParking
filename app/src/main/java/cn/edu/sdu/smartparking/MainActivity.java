@@ -29,6 +29,8 @@ import com.amap.api.navi.model.NaviLatLng;
 
 import java.util.ArrayList;
 
+import cn.edu.sdu.smartparking.util.Utils;
+
 public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener,
         AMapLocationListener, AMap.OnMarkerClickListener {
     /** mess up ... i know **/
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     private RadioGroup radioGroup;
     private Button goButton;
 
+    private Integer mPos = 0;
     private ArrayList<LatLng> mPosList = new ArrayList<LatLng>();
     private ArrayList<Marker> mMarks = new ArrayList<Marker>();
 
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         goButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
+                if (mPos == 0) return;
                 startAMapNavi(mSelectedMarker);
             }
         });
@@ -94,7 +98,9 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     private void initParkingPosition() {
         mPosList.add(new LatLng(37.527782, 122.061519));
         mPosList.add(new LatLng(37.527608, 122.061503));
-        mPosList.add(new LatLng(37.527233, 122.061525));
+        mPosList.add(new LatLng(37.528188, 122.056585));
+        mPosList.add(new LatLng(37.528501, 122.060851));
+
     }
 
     /**
@@ -166,7 +172,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         if (mCurrentLocation == null) {
             return;
         }
+        Utils.makePost(mPos,0);
+
         Intent intent = new Intent(this, RouteNaviActivity.class);
+        intent.putExtra("pos", mPos);
         intent.putExtra("gps", true);
         intent.putExtra("start", new NaviLatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
         intent.putExtra("end", new NaviLatLng(marker.getPosition().latitude, marker.getPosition().longitude));
@@ -202,12 +211,19 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         switch (checkedId) {
             case R.id.radBtn1:
                 marker = mMarks.get(0);
+                mPos = 1;
                 break;
             case R.id.radBtn2:
                 marker = mMarks.get(1);
+                mPos = 2;
                 break;
             case R.id.radBtn3:
                 marker = mMarks.get(2);
+                mPos = 3;
+                break;
+            case R.id.radBtn4:
+                marker = mMarks.get(3);
+                mPos = 4;
                 break;
             default:
                 break;
@@ -217,6 +233,5 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         mSelectedMarker = marker;
         zoomToSpan();
     }
-
 
 }

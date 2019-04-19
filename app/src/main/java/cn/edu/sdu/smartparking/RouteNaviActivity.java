@@ -2,10 +2,17 @@ package cn.edu.sdu.smartparking;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Window;
 import android.widget.Toast;
 
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
+import com.amap.api.maps.model.animation.Animation;
+import com.amap.api.maps.model.animation.ScaleAnimation;
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.AMapNaviListener;
 import com.amap.api.navi.AMapNaviView;
@@ -30,6 +37,8 @@ import com.autonavi.tbt.TrafficFacilityInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.edu.sdu.smartparking.util.Utils;
+
 /**
  * 按照选定策略导航
  */
@@ -38,7 +47,9 @@ public class RouteNaviActivity extends Activity implements AMapNaviListener, AMa
     AMapNaviView mAMapNaviView;
     AMapNavi mAMapNavi;
 
+    LatLng mEnd;
     boolean mIsGps;
+    Integer mPos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +77,10 @@ public class RouteNaviActivity extends Activity implements AMapNaviListener, AMa
             return;
         }
         mIsGps = intent.getBooleanExtra("gps", false);
+        mPos = intent.getIntExtra("pos", 0);
         NaviLatLng start = intent.getParcelableExtra("start");
         NaviLatLng end = intent.getParcelableExtra("end");
+        mEnd = new LatLng(end.getLatitude(), end.getLongitude());
         calculateDriveRoute(start, end);
     }
 
@@ -166,6 +179,17 @@ public class RouteNaviActivity extends Activity implements AMapNaviListener, AMa
 
     @Override
     public void onArriveDestination() {
+        Toast.makeText(RouteNaviActivity.this,"到达目的地", Toast.LENGTH_SHORT).show();
+        Utils.makePost(mPos, 1);
+
+        MarkerOptions options = new MarkerOptions();
+        options.position(mEnd);
+        options.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(this.getResources(),R.drawable.guide)));
+        Marker marker = mAMapNaviView.getMap().addMarker(options);
+        Animation markerAnimation = new ScaleAnimation(0, 1, 0, 1); //初始化生长效果动画
+        markerAnimation.setDuration(800);  //设置动画时间 单位毫秒
+        marker.setAnimation(markerAnimation);
+        marker.setAlpha(0.6f);
     }
 
     @Override
@@ -202,6 +226,7 @@ public class RouteNaviActivity extends Activity implements AMapNaviListener, AMa
 
     @Override
     public void onNaviCancel() {
+        Utils.makePost(mPos, 2);
         finish();
     }
 
